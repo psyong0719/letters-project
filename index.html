@@ -55,7 +55,6 @@
     margin-right:1.15em; opacity:1; will-change:opacity,transform,filter;
     animation: floatXY var(--t,4.6s) ease-in-out infinite;
   }
-  /* 기본: 입력 시 잉크가 서서히 사라짐 */
   .fade{ animation: inkFade 3.6s ease forwards, floatXY var(--t,4.6s) ease-in-out infinite; }
 
   .revealing{ transition:opacity var(--reveal) ease; opacity:1 !important; }
@@ -78,7 +77,6 @@
   }
   @keyframes blink{50%{opacity:0}}
 
-  /* 마법 광선/베일/플래시 */
   .beam{position:absolute; height:2px; pointer-events:none;
         background:linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,.95), rgba(255,255,255,0));
         box-shadow:0 0 14px rgba(255,255,255,.5); transform-origin:left center}
@@ -86,14 +84,12 @@
         background:radial-gradient(circle at 50% 50%, rgba(255,255,255,.25), rgba(0,0,0,0) 70%); mix-blend-mode:screen}
   .flash{position:absolute; inset:0; pointer-events:none; background:rgba(255,255,255,.92)}
 
-  /* 연기 같은 잉크 먼지 */
   .dust{
     position:absolute; border-radius:50%; background:rgba(230,240,255,.8);
     pointer-events:none; filter:blur(.3px);
     will-change: transform, opacity, filter;
   }
 
-  /* 빗자루 */
   .broom{
     position:fixed; width:190px; height:28px; transform:translate(-50%,0) rotate(0rad);
     filter:drop-shadow(0 0 9px rgba(180,200,255,.28)); pointer-events:none; z-index:5;
@@ -122,8 +118,6 @@
     75%{transform:translate(calc(-50% + 2px),2px) rotate(.10rad)}
     100%{transform:translate(-50%,0) rotate(-.05rad)}
   }
-
-  /* 주문 모달 (탭 누르고 있는 동안만 표시) */
   .modal{position:fixed; inset:0; background:rgba(0,0,0,.55); display:none; place-items:center; z-index:1000}
   .card{width:min(820px,92vw); max-height:78vh; overflow:auto; background:#0e1520; color:#d8e7f8; border:1px solid #223349; border-radius:16px; padding:18px 20px; box-shadow:0 30px 120px rgba(0,0,0,.55)}
   .card h2{margin:6px 0 8px;font-size:18px;font-family:"Cinzel", serif}
@@ -147,17 +141,14 @@
   </div>
 </div>
 
-<!-- 빗자루 -->
 <div id="broom" class="broom" aria-hidden="true">
   <div class="broomInner">
     <div class="shaft"></div><div class="handle"></div><div class="collar"></div><div class="bristle"></div>
   </div>
 </div>
 
-<!-- BGM -->
 <audio id="bgm" src="harry_potter_theme_1.mp3" preload="auto" loop></audio>
 
-<!-- 주문 목록 (탭을 누르는 동안만 표시) -->
 <div id="modal" class="modal" role="dialog" aria-modal="true" aria-label="Spell list">
   <div class="card">
     <h2>Spell Compendium</h2>
@@ -167,7 +158,6 @@
 
 <script>
 (()=> {
-/* ===== 엘리먼트 ===== */
 const pad   = document.getElementById('pad');
 const line  = document.getElementById('line');
 const caret = document.getElementById('caret');
@@ -182,7 +172,6 @@ window.addEventListener('load', ()=>{ pad.focus(); snapBroomHome(); });
 
 function moveCaret(){ line.appendChild(caret); pad.scrollTop = pad.scrollHeight; }
 
-/* ===== 저장 ===== */
 const items = [];
 let revealed = false;
 let isToggling = false;
@@ -197,12 +186,11 @@ function setFloat(el, amp=1){
   el.style.setProperty('--t',  (4.4 + Math.random()*1.6)+'s');
 }
 
-/* ===== 입력/삭제 ===== */
 function insertItem(it){
   items.push(it);
   if(it.type==='ch'){
     const s=document.createElement('span'); s.className='ch';
-    if(!revealed) s.classList.add('fade');        // 숨김 모드에서도 잠깐 보였다가 서서히 사라짐
+    if(!revealed) s.classList.add('fade');        
     setFloat(s, revealed?1.3:1);
     s.textContent=it.ch; it.el=s; line.insertBefore(s, caret);
   }else if(it.type==='space'){
@@ -218,7 +206,7 @@ function backspace(){
   for(let i=items.length-1;i>=0;i--){
     const it=items[i];
     if(it?.el && it.type!=='br'){
-      smokeAt(it.el, 20);           // 연기처럼 흩어짐
+      smokeAt(it.el, 20);          
       it.el.remove(); items.splice(i,1);
       break;
     }else if(it?.el){
@@ -229,7 +217,6 @@ function backspace(){
   moveCaret(); sfx('back');
 }
 
-/* ===== 입력 제한 (영문 + 공백) ===== */
 function isAsciiLetter(k){ return /^[A-Za-z]$/.test(k); }
 function isPrintableLetterOrSpace(k){ return k===' ' || isAsciiLetter(k); }
 
@@ -238,7 +225,6 @@ window.addEventListener('keydown', (e)=>{
 
   audioKick();
 
-  // Tab → 누르는 동안만 주문 리스트 표시
   if(e.key==='Tab'){
     e.preventDefault();
     if(modal.style.display!=='grid'){ modal.style.display='grid'; buildSpellList(); }
@@ -251,7 +237,6 @@ window.addEventListener('keydown', (e)=>{
   if(e.key==='Backspace'){ backspace(); return; }
   if(e.key==='Enter'){ insertItem({type:'br'}); return; }
 
-  // 방향키(수동 이동은 유지)
   if(e.key.startsWith('Arrow')){ setArrow(e.key,true); startBroomLoop(); return; }
 
   if(e.repeat) return;
@@ -269,7 +254,6 @@ window.addEventListener('keyup', (e)=>{
   }
 });
 
-/* ===== Reveal / Hide ===== */
 const REVEAL_MS = 4400;
 const HIDE_MS   = 4400;
 
@@ -300,7 +284,6 @@ function toggleReveal(){
   }
 }
 
-/* ===== 주문 인식 ===== */
 const MAP = {
   'lumos':'lumos','nox':'nox','expelliarmus':'expelliarmus',
   'wingardiumleviosa':'wingardium leviosa',
@@ -342,7 +325,7 @@ function getLetterRun(n){
 function eraseSpans(spans, idxs){
   spans.forEach(el=>{
     if(!el) return;
-    smokeAt(el, 24);                // 연기처럼 흩어짐
+    smokeAt(el, 24);               
     el.style.transition='opacity .22s ease';
     el.style.opacity='0';
     setTimeout(()=>el.remove(), 260);
@@ -365,7 +348,6 @@ function highlight(spans){
   sfx('spell');
 }
 
-/* ===== 장면 유틸 ===== */
 function beam(x,y,len=360,angle=0,color='rgba(255,255,255,.95)',dur=520){
   const b=document.createElement('div'); b.className='beam';
   b.style.left=x+'px'; b.style.top=y+'px'; b.style.width=len+'px';
@@ -379,7 +361,6 @@ function beam(x,y,len=360,angle=0,color='rgba(255,255,255,.95)',dur=520){
 }
 function caretPos(){ const p=pad.getBoundingClientRect(), c=caret.getBoundingClientRect(); return { x:c.left-p.left, y:(c.top+c.bottom)/2 - p.top }; }
 
-/* ===== 연기(먼지) 이펙트 ===== */
 function smokeAt(el, count=22){
   if(!el || !pad) return;
   const cr = el.getBoundingClientRect();
@@ -395,9 +376,8 @@ function smokeAt(el, count=22){
     d.style.top  = (cy - size/2) + 'px';
     pad.appendChild(d);
 
-    // 연기: 아래로 떨어지지 않고 사방으로 천천히 흩어짐
     const ang1 = rand(0, Math.PI*2);
-    const ang2 = ang1 + rand(-0.8, 0.8); // 살짝 방향이 틀어지며 흐름
+    const ang2 = ang1 + rand(-0.8, 0.8);
     const r1 = rand(12, 28);
     const r2 = r1 + rand(10, 24);
 
@@ -420,7 +400,6 @@ function smokeAt(el, count=22){
   }
 }
 
-/* ===== 빗자루 기본 이동(방향키) ===== */
 const br = { x:0, y:0, vx:0, vy:0, keys:{L:false,R:false,U:false,D:false}, running:false };
 
 function homeAnchor(){
@@ -431,15 +410,15 @@ function positionBroom(x, y, vx=0, vy=0){
   broom.style.left = x + 'px';
   broom.style.top  = y + 'px';
   const moving = Math.hypot(vx,vy) > 0.001;
-  const theta  = moving ? (Math.atan2(vy, vx) + Math.PI) : 0; // 홈에서는 항상 수평(0rad)
+  const theta  = moving ? (Math.atan2(vy, vx) + Math.PI) : 0; 
   broom.style.transform = `translate(-50%,0) rotate(${theta}rad)`;
 }
 function snapBroomHome(){
   const h = homeAnchor();
   br.x=h.x; br.y=h.y; br.vx=0; br.vy=0; br.running=false;
-  broom.style.animation = '';                   // 흔들림 제거
-  broom.classList.remove('broomGlow');          // 발광 제거
-  positionBroom(br.x, br.y, 0, 0);              // 수평 유지
+  broom.style.animation = '';                
+  broom.classList.remove('broomGlow');      
+  positionBroom(br.x, br.y, 0, 0);              
 }
 function anyArrowDown(){ return br.keys.L||br.keys.R||br.keys.U||br.keys.D; }
 function setArrow(key,on){
@@ -475,12 +454,10 @@ function loopB(){
 }
 window.addEventListener('resize', snapBroomHome);
 
-/* ===== 빗자루 주문 FX (새 규칙) ===== */
 const fx = { timer:null };
 function clearBroomFX(){ if(fx.timer){ clearTimeout(fx.timer); fx.timer=null; } broom.style.animation=''; broom.classList.remove('broomGlow'); }
 
 function broomAuraOnce(intensity=1.0, dur=900){
-  // 빗자루 위치에 강한 빛 번쩍 (expecto patronum 전용 등)
   const r = broom.getBoundingClientRect();
   const aura = document.createElement('div');
   aura.style.position='fixed';
@@ -503,25 +480,22 @@ const DUR = {
 
 function broomFX(name, dur){
   clearBroomFX();
-  if(anyArrowDown()) return;       // 수동 조작 중이면 패스
+  if(anyArrowDown()) return;      
 
   const h = homeAnchor();
   let x=h.x, y=h.y;
 
   switch(name){
     case 'lumos':{
-      // 제자리 강한 빛 → 꺼짐
       broom.classList.add('broomGlow');
       fx.timer = setTimeout(()=>{ broom.classList.remove('broomGlow'); snapBroomHome(); }, dur+60);
       break;
     }
     case 'nox':{
-      // 추가효과 없음 (그대로)
       fx.timer = setTimeout(()=>snapBroomHome(), dur);
       break;
     }
     case 'expelliarmus':{
-      // 튕겨나갔다가 복귀 (수평 유지)
       const dx = (Math.random()*2-1)*360, dy = (Math.random()*2-1)*220;
       const start = `translate(-50%,0) rotate(0rad)`;
       broom.animate(
@@ -534,7 +508,6 @@ function broomFX(name, dur){
       break;
     }
     case 'wingardium leviosa':{
-      // 살짝 붕 떠올랐다 복귀 (수평 유지)
       const start = `translate(-50%,0) rotate(0rad)`;
       broom.animate(
         [{ transform:start },
@@ -546,32 +519,27 @@ function broomFX(name, dur){
       break;
     }
     case 'obliviate':{
-      // 잠깐 사라졌다가 복귀
       broom.style.opacity = '0';
       fx.timer = setTimeout(()=>{ broom.style.opacity='1'; snapBroomHome(); }, dur);
       break;
     }
     case 'expecto patronum':{
-      // 강한 빛 번쩍 → 꺼짐 (제자리)
       broom.classList.add('broomGlow');
       broomAuraOnce(1.2, dur);
       fx.timer = setTimeout(()=>{ broom.classList.remove('broomGlow'); snapBroomHome(); }, dur+60);
       break;
     }
     case 'imperio':{
-      // 제자리에서 미친 듯 흔들림 (빠른 진동)
       broom.style.animation = 'broomManic 0.12s linear infinite';
       fx.timer = setTimeout(()=>{ broom.style.animation=''; snapBroomHome(); }, dur+100);
       break;
     }
     case 'crucio':{
-      // 더 격하게 흔들림
       broom.style.animation = 'broomRattle 0.12s linear infinite';
       fx.timer = setTimeout(()=>{ broom.style.animation=''; snapBroomHome(); }, dur+120);
       break;
     }
     case 'avada kedavra':{
-      // 사라졌다 복귀
       broom.style.opacity='0';
       fx.timer = setTimeout(()=>{ broom.style.opacity='1'; snapBroomHome(); }, dur+140);
       break;
@@ -579,7 +547,6 @@ function broomFX(name, dur){
   }
 }
 
-/* ===== 주문 본체 (패드 FX + 빗자루 FX 호출) ===== */
 function triggerSpell(name, targetSpans=[]){
   broomFX(name, DUR[name]||1000);
 
@@ -676,8 +643,6 @@ function collectLastWord(){
   }
   return out;
 }
-
-/* ===== 주문 목록 (1회만 구성) ===== */
 const SPELL_INFO = [
   ['Lumos','Creates light at the wand tip.'],
   ['Nox','Extinguishes the light produced by Lumos.'],
@@ -699,14 +664,13 @@ function buildSpellList(){
   grid.dataset.built='1';
 }
 
-/* ===== 오디오 ===== */
 let actx=null, master=null, audioArmed=false;
 function audioKick(){
   if(audioArmed) return;
   audioArmed=true;
   actx=new (window.AudioContext||window.webkitAudioContext)();
   master=actx.createGain(); master.gain.value=0.18; master.connect(actx.destination);
-  try{ bgm.volume=0.5; bgm.play().catch(()=>{}); }catch(e){}
+  try{ bgm.volume=1.0; bgm.play().catch(()=>{}); }catch(e){}
   document.addEventListener('click', ()=>{ actx.resume(); bgm.play().catch(()=>{}); }, {once:true});
   document.addEventListener('keydown', ()=>{ actx.resume(); bgm.play().catch(()=>{}); }, {once:true});
 }
@@ -732,7 +696,6 @@ function sfx(name){
   }
 }
 
-/* ===== 초기화 ===== */
 moveCaret();
 snapBroomHome();
 
